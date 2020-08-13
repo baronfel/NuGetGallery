@@ -146,3 +146,17 @@ Clone and checkout the `dev` branch.
     
 6.  __Be ready to guide your change through QA, Staging and Prod__
     Your change will make its way through the QA, Staging and finally Prod branches as it's deployed to the various environments. Be prepared to fix additional bugs!
+
+## Jobs
+
+### VerifyGitHubVulnerabilities
+
+This is a run-once job for taking a current snapshot of the whole of GitHub's security advisory collection (pertaining to the `NUGET` ecosystem) and comparing it with the vulnerability records in the gallery database. It's designed to be run on an ad hoc basis (not an ongoing monitoring job), from the command line, with all status message streamed to `stdout` and all vulnerability differences streamed to `stderr`. A typical command line will look like this:
+
+```
+verifygithubvulnerabilities.exe -Configuration appsettings.json -InstrumentationKey <key> -HeartbeatIntervalSeconds 60 2>c:\errors.txt
+```
+
+- the `2>` will direct `stderr` to a text file (a `1>` would similarly direct `stdout` but it's probably useful to have that print to console)
+- the contents of the `appsettings.json` file will be similar (identical is fine--there are just some extra unneeded settings in them) to the settings files used for `GitHubVulnerabilities2Db`.
+
