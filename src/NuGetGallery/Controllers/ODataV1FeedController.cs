@@ -104,7 +104,7 @@ namespace NuGetGallery.Controllers
                 id,
                 version,
                 return404NotFoundWhenNoResults: true,
-                isNonHijackEnabled: _featureFlagService.IsODataV1GetSpecificEnabled());
+                isNonHijackEnabled: _featureFlagService.IsODataV1GetSpecificNonHijackedEnabled());
             return result.FormattedAsSingleResult<V1FeedPackage>();
         }
 
@@ -123,7 +123,7 @@ namespace NuGetGallery.Controllers
                 id,
                 version: null,
                 return404NotFoundWhenNoResults: false,
-                isNonHijackEnabled: _featureFlagService.IsODataV1FindPackagesByIdEnabled());
+                isNonHijackEnabled: _featureFlagService.IsODataV1FindPackagesByIdNonHijackedEnabled());
         }
 
         // /api/v1/FindPackagesById()/$count?id=
@@ -317,7 +317,7 @@ namespace NuGetGallery.Controllers
                 customQuery = true;
             }
 
-            if (!_featureFlagService.IsODataV1SearchEnabled())
+            if (!_featureFlagService.IsODataV1SearchNonHijackedEnabled())
             {
                 return BadRequest(Strings.ODataParametersDisabled);
             }

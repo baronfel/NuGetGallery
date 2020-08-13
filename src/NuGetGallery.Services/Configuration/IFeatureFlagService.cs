@@ -160,36 +160,36 @@ namespace NuGetGallery
         /// <summary>
         /// Whether the /Packages(Id=,Version=) endpoint is enabled for non-hijacked queries for the V1 OData API.
         /// </summary>
-        bool IsODataV1GetSpecificEnabled();
+        bool IsODataV1GetSpecificNonHijackedEnabled();
 
         /// <summary>
         /// Whether the /FindPackagesById() endpoint is enabled for non-hijacked queries for the V1 OData API.
         /// </summary>
-        bool IsODataV1FindPackagesByIdEnabled();
+        bool IsODataV1FindPackagesByIdNonHijackedEnabled();
 
         /// <summary>
         /// Whether the /Search() endpoint is enabled for non-hijacked queries for the V1 OData API.
         /// </summary>
-        bool IsODataV1SearchEnabled();
+        bool IsODataV1SearchNonHijackedEnabled();
 
         /// <summary>
-        /// Whether the /Packages() endpoint is enabled for the V2 OData API.
+        /// Whether the /Packages() endpoint is enabled for non-hijacked queries for the V2 OData API.
         /// </summary>
-        bool IsODataV2GetAllEnabled();
+        bool IsODataV2GetAllNonHijackedEnabled();
 
         /// <summary>
         /// Whether the /Packages(Id=,Version=) endpoint is enabled for non-hijacked queries for the V2 OData API.
         /// </summary>
-        bool IsODataV2GetSpecificEnabled();
+        bool IsODataV2GetSpecificNonHijackedEnabled();
 
         /// <summary>
         /// Whether the /FindPackagesById() endpoint is enabled for non-hijacked queries for the V2 OData API.
         /// </summary>
-        bool IsODataV2FindPackagesByIdEnabled();
+        bool IsODataV2FindPackagesByIdNonHijackedEnabled();
 
         /// <summary>
         /// Whether the /Search() endpoint is enabled for non-hijacked queries for the V2 OData API.
         /// </summary>
-        bool IsODataV2SearchEnabled();
+        bool IsODataV2SearchNonHijackedEnabled();
     }
 }

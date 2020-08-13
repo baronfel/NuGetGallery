@@ -79,7 +79,7 @@ namespace NuGetGallery.Controllers
             var semVerLevelKey = SemVerLevelKey.ForSemVerLevel(semVerLevel);
             bool? customQuery = null;
 
-            var isNonHijackEnabled = _featureFlagService.IsODataV2GetAllEnabled();
+            var isNonHijackEnabled = _featureFlagService.IsODataV2GetAllNonHijackedEnabled();
 
             // Try the search service
             try
@@ -193,7 +193,7 @@ namespace NuGetGallery.Controllers
                 version, 
                 semVerLevel: SemVerLevelKey.SemVerLevel2, 
                 return404NotFoundWhenNoResults: true,
-                isNonHijackEnabled: _featureFlagService.IsODataV2GetSpecificEnabled());
+                isNonHijackEnabled: _featureFlagService.IsODataV2GetSpecificNonHijackedEnabled());
 
             return result.FormattedAsSingleResult<V2FeedPackage>();
         }
@@ -230,7 +230,7 @@ namespace NuGetGallery.Controllers
                 version: null, 
                 semVerLevel: semVerLevel, 
                 return404NotFoundWhenNoResults: false,
-                isNonHijackEnabled: _featureFlagService.IsODataV2FindPackagesByIdEnabled());
+                isNonHijackEnabled: _featureFlagService.IsODataV2FindPackagesByIdNonHijackedEnabled());
         }
 
         // /api/v2/FindPackagesById()/$count?semVerLevel=
@@ -457,7 +457,7 @@ namespace NuGetGallery.Controllers
                 customQuery = true;
             }
 
-            if (!_featureFlagService.IsODataV2SearchEnabled())
+            if (!_featureFlagService.IsODataV2SearchNonHijackedEnabled())
             {
                 return BadRequest(Strings.ODataParametersDisabled);
             }

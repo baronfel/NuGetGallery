@@ -208,37 +208,37 @@ namespace NuGetGallery
             return _client.IsEnabled(ODataV1GetAllFeatureName, defaultValue: true);
         }
 
-        public bool IsODataV1GetSpecificEnabled()
+        public bool IsODataV1GetSpecificNonHijackedEnabled()
         {
             return _client.IsEnabled(ODataV1GetSpecificFeatureName, defaultValue: true);
         }
 
-        public bool IsODataV1FindPackagesByIdEnabled()
+        public bool IsODataV1FindPackagesByIdNonHijackedEnabled()
         {
             return _client.IsEnabled(ODataV1FindPackagesByIdFeatureName, defaultValue: true);
         }
 
-        public bool IsODataV1SearchEnabled()
+        public bool IsODataV1SearchNonHijackedEnabled()
         {
             return _client.IsEnabled(ODataV1SearchFeatureName, defaultValue: true);
         }
 
-        public bool IsODataV2GetAllEnabled()
+        public bool IsODataV2GetAllNonHijackedEnabled()
         {
             return _client.IsEnabled(ODataV2GetAllFeatureName, defaultValue: true);
         }
 
-        public bool IsODataV2GetSpecificEnabled()
+        public bool IsODataV2GetSpecificNonHijackedEnabled()
         {
             return _client.IsEnabled(ODataV2GetSpecificFeatureName, defaultValue: true);
         }
 
-        public bool IsODataV2FindPackagesByIdEnabled()
+        public bool IsODataV2FindPackagesByIdNonHijackedEnabled()
         {
             return _client.IsEnabled(ODataV2FindPackagesByIdFeatureName, defaultValue: true);
         }
 
-        public bool IsODataV2SearchEnabled()
+        public bool IsODataV2SearchNonHijackedEnabled()
         {
             return _client.IsEnabled(ODataV2SearchFeatureName, defaultValue: true);
         }
