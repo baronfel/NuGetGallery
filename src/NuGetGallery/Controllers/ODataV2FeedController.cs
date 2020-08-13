@@ -79,6 +79,8 @@ namespace NuGetGallery.Controllers
             var semVerLevelKey = SemVerLevelKey.ForSemVerLevel(semVerLevel);
             bool? customQuery = null;
 
+            var isNonHijackEnabled = _featureFlagService.IsODataV2GetAllEnabled();
+
             // Try the search service
             try
             {
@@ -129,15 +131,20 @@ namespace NuGetGallery.Controllers
                     customQuery = true;
                 }
             }
-            catch (ODataException ex) when (ex.InnerException != null && ex.InnerException is FormatException)
+            catch (ODataException ex) when (isNonHijackEnabled && ex.InnerException != null && ex.InnerException is FormatException)
             {
                 // Sometimes users make invalid requests. It's not exceptional behavior, don't trace.
             }
-            catch (Exception ex)
+            catch (Exception ex) when (isNonHijackEnabled)
             {
                 // Swallowing Exception intentionally. If *anything* goes wrong in search, just fall back to the database.
                 // We don't want to break package restores. We do want to know if this happens, so here goes:
                 QuietLog.LogHandledException(ex);
+            }
+
+            if (!isNonHijackEnabled)
+            {
+                return BadRequest(Strings.ODataParametersDisabled);
             }
 
             // Reject only when try to reach database.
@@ -185,7 +192,8 @@ namespace NuGetGallery.Controllers
                 id, 
                 version, 
                 semVerLevel: SemVerLevelKey.SemVerLevel2, 
-                return404NotFoundWhenNoResults: true);
+                return404NotFoundWhenNoResults: true,
+                isNonHijackEnabled: _featureFlagService.IsODataV2GetSpecificEnabled());
 
             return result.FormattedAsSingleResult<V2FeedPackage>();
         }
@@ -221,7 +229,8 @@ namespace NuGetGallery.Controllers
                 id, 
                 version: null, 
                 semVerLevel: semVerLevel, 
-                return404NotFoundWhenNoResults: false);
+                return404NotFoundWhenNoResults: false,
+                isNonHijackEnabled: _featureFlagService.IsODataV2FindPackagesByIdEnabled());
         }
 
         // /api/v2/FindPackagesById()/$count?semVerLevel=
@@ -243,7 +252,8 @@ namespace NuGetGallery.Controllers
             string id, 
             string version, 
             string semVerLevel,
-            bool return404NotFoundWhenNoResults)
+            bool return404NotFoundWhenNoResults,
+            bool isNonHijackEnabled)
         {
             var packages = GetAll()
                 .Include(p => p.PackageRegistration)
@@ -315,11 +325,16 @@ namespace NuGetGallery.Controllers
                     customQuery = true;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (isNonHijackEnabled)
             {
                 // Swallowing Exception intentionally. If *anything* goes wrong in search, just fall back to the database.
                 // We don't want to break package restores. We do want to know if this happens, so here goes:
                 QuietLog.LogHandledException(ex);
+            }
+
+            if (!isNonHijackEnabled)
+            {
+                return BadRequest(Strings.ODataParametersDisabled);
             }
 
             if (return404NotFoundWhenNoResults && !packages.Any())
@@ -440,6 +455,11 @@ namespace NuGetGallery.Controllers
             else
             {
                 customQuery = true;
+            }
+
+            if (!_featureFlagService.IsODataV2SearchEnabled())
+            {
+                return BadRequest(Strings.ODataParametersDisabled);
             }
 
             //Reject only when try to reach database.
