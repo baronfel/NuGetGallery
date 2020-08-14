@@ -32,21 +32,6 @@ namespace NuGetGallery.FunctionalTests.ODataFeeds
             _packageCreationHelper = new PackageCreationHelper(TestOutputHelper);
         }
 
-        [Fact]
-        [Description("Upload two packages and then issue the FindPackagesById request, expect to return both versions")]
-        [Priority(1)]
-        [Category("P1Tests")]
-        public async Task FindPackagesByIdTest()
-        {
-            var packageInfo = await _clientSdkHelper.UploadPackageVersion();
-
-            var packageId = packageInfo.Id;
-            var packageVersion = packageInfo.Version;
-            string url = UrlHelper.V2FeedRootUrl + @"/FindPackagesById()?id='" + packageId + "'&$orderby=Version";
-            var containsResponseText = await _odataHelper.ContainsResponseText(url, @"<id>" + UrlHelper.V2FeedRootUrl + "Packages(Id='" + packageId + "',Version='" + packageVersion + "')</id>");
-            Assert.True(containsResponseText);
-        }
-
         private const int PackagesInOrderNumPackages = 10;
 
         [Fact]
@@ -91,11 +76,6 @@ namespace NuGetGallery.FunctionalTests.ODataFeeds
 
             await Task.WhenAll(unlistedPackageIds.Select(id => _clientSdkHelper.VerifyPackageExistsInV2Async(id, version, listed: false)));
             await CheckPackageTimestampsInOrder(unlistedPackageIds, "LastEdited", unlistStartTimestamp, version);
-        }
-
-        private static string GetPackagesAppearInFeedInOrderUrl(DateTime time, string timestamp)
-        {
-            return $"{UrlHelper.V2FeedRootUrl}/Packages?$filter={timestamp} gt DateTime'{time:o}'&$orderby={timestamp} desc&$select={timestamp}";
         }
 
         /// <summary>
