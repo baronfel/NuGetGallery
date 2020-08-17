@@ -13,6 +13,7 @@ using CommonMark;
 using CommonMark.Syntax;
 using NuGet.Packaging;
 using NuGet.Services.Entities;
+using NuGetGallery.Packaging;
 
 namespace NuGetGallery
 {
@@ -208,6 +209,36 @@ namespace NuGetGallery
             }
 
             return edit.ReadMeState != PackageEditReadMeState.Unchanged;
+        }
+
+        public async Task ExtractAndSaveReadmeFileAsync(Package package, Stream packageStream)
+        {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            if (packageStream == null)
+            {
+                throw new ArgumentNullException(nameof(packageStream));
+            }
+
+            packageStream.Seek(0, SeekOrigin.Begin);
+            using (var packageArchiveReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
+            {
+                var packageMetadata = PackageMetadata.FromNuspecReader(packageArchiveReader.GetNuspecReader(), strict: true);
+                if (string.IsNullOrWhiteSpace(packageMetadata.ReadmeFile))
+                {
+                    throw new InvalidOperationException("No readme file specified in the nuspec");
+                }
+
+                var filename = FileNameHelper.GetZipEntryPath(packageMetadata.ReadmeFile);
+                var ReadmeFileEntry = packageArchiveReader.GetEntry(filename); // throws on non-existent file
+                using (var readmeFileStream = ReadmeFileEntry.Open())
+                {
+                    await _packageFileService.SaveReadmeFileAsync(package, readmeFileStream);
+                }
+            }
         }
 
         /// <summary>

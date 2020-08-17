@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Moq;
 using NuGet.Services.Entities;
+using NuGetGallery.TestUtils;
 using Xunit;
 
 namespace NuGetGallery
@@ -360,6 +361,90 @@ namespace NuGetGallery
 
                 // Act & Assert.
                 await Assert.ThrowsAsync<ArgumentException>(() => ReadMeService.GetReadMeMdAsync(request, Encoding.UTF8));
+            }
+        }
+
+        public class ExtractAndSaveReadmeFileAsync
+        {
+            internal ReadMeService ReadMeService = new ReadMeService(
+                new Mock<IPackageFileService>().Object,
+                new Mock<IEntitiesContext>().Object);
+
+            [Fact]
+            public async Task ThrowsWhenPackageIsNull()
+            {
+                var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => ReadMeService.ExtractAndSaveReadmeFileAsync(
+                    package: null,
+                    packageStream: Mock.Of<Stream>()));
+
+                Assert.Equal("package", ex.ParamName);
+            }
+
+            [Fact]
+            public async Task ThrowsWhenPackagesStreamIsNull()
+            {
+                var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => ReadMeService.ExtractAndSaveReadmeFileAsync(
+                    package: Mock.Of<Package>(),
+                    packageStream: null));
+
+                Assert.Equal("packageStream", ex.ParamName);
+            }
+
+            [Fact]
+            public async Task ThrowsOnMissingReadmeFile()
+            {
+                const string ReadmeFileName = "readme.md";
+                var packageStream = GeneratePackageAsync(ReadmeFileName, false);
+                var pacakge = PackageServiceUtility.CreateTestPackage();
+
+                var ex = await Assert.ThrowsAsync<FileNotFoundException>(() => ReadMeService.ExtractAndSaveReadmeFileAsync(pacakge, packageStream));
+                Assert.Contains(ReadmeFileName, ex.Message);
+            }
+
+            [Theory]
+            [InlineData("readme.md")]
+            [InlineData("foo\\readme.md")]
+            [InlineData("foo/readme.md")]
+            public async Task SavesReadmeFile(String readmeFileName)
+            {
+                var packageStream = GeneratePackageAsync(readmeFileName);
+                var _packageFileService = new Mock<IPackageFileService>();
+                var service = CreateService(_packageFileService);
+
+                var package = new Package()
+                {
+                    PackageRegistration = new PackageRegistration() { Id = "Foo" },
+                    Version = "1.0.0",
+                    HasReadMe = true,
+                    EmbeddedReadmeType = EmbeddedReadmeFileType.Markdown
+                };
+
+                _packageFileService.Setup(x => x.SaveReadmeFileAsync(package, It.IsAny<Stream>()))
+                    .Returns(Task.CompletedTask)
+                    .Verifiable();
+
+                await service.ExtractAndSaveReadmeFileAsync(package, packageStream);
+
+                 _packageFileService
+                    .Verify(x => x.SaveReadmeFileAsync(package, It.IsAny<Stream>()), Times.Once);
+            }
+             
+            static ReadMeService CreateService(Mock<IPackageFileService> packageFileSvc = null)
+            {
+                packageFileSvc = packageFileSvc ?? new Mock<IPackageFileService>();
+
+                return new ReadMeService(
+                    packageFileSvc.Object,
+                    new Mock<IEntitiesContext>().Object);
+            }
+
+            private static byte[] ReadmeFileContents => Encoding.UTF8.GetBytes("Sample readme md file");
+
+            private static MemoryStream GeneratePackageAsync(string readmeFileName = null, bool saveReadmeFile = true)
+            {
+                return PackageServiceUtility.CreateNuGetPackageStream(
+                    readmeFilename: readmeFileName,
+                    readmeFileContents: readmeFileName != null && saveReadmeFile ? ReadmeFileContents : null);
             }
         }
 

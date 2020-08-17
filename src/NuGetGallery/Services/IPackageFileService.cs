@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using NuGet.Services.Entities;
@@ -32,6 +33,13 @@ namespace NuGetGallery
         /// <param name="package">The package associated with the readme.</param>
         /// <param name="readMeMd">Markdown content.</param>
         Task SaveReadMeMdFileAsync(Package package, string readMeMd);
+
+        /// <summary>
+        /// Saves the package readme.md file to storage.
+        /// </summary>
+        /// <param name="package">The package associated with the readme.</param>
+        /// <param name="ReadmeFile">The content of readme file.</param>
+        Task SaveReadmeFileAsync(Package package, Stream ReadmeFile);
 
         /// <summary>
         /// Downloads the readme.md from storage.

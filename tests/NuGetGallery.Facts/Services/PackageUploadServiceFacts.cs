@@ -635,6 +635,7 @@ namespace NuGetGallery
             protected readonly Mock<IDiagnosticsService> _diagnosticsService;
             protected readonly Mock<IPackageVulnerabilityService> _vulnerabilityService;
             protected readonly Mock<IPackageMetadataValidationService> _metadataValidationService;
+            protected readonly Mock<IReadMeService> _readMeService;
             protected Package _package;
             protected Stream _packageFile;
             protected ArgumentException _unexpectedException;
@@ -680,6 +681,8 @@ namespace NuGetGallery
 
                 _metadataValidationService = new Mock<IPackageMetadataValidationService>();
 
+                _readMeService = new Mock<IReadMeService>();
+
                 _target = new PackageUploadService(
                     _packageService.Object,
                     _packageFileService.Object,
@@ -689,7 +692,8 @@ namespace NuGetGallery
                     _licenseFileService.Object,
                     _diagnosticsService.Object,
                     _vulnerabilityService.Object,
-                    _metadataValidationService.Object);
+                    _metadataValidationService.Object,
+                    _readMeService.Object);
             }
 
             protected static Mock<TestPackageReader> GeneratePackage(

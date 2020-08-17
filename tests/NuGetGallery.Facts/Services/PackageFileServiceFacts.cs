@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using Moq;
 using NuGet.Services.Entities;
+using NuGetGallery.TestUtils;
 using Xunit;
 
 namespace NuGetGallery
@@ -262,6 +263,65 @@ namespace NuGetGallery
             }
         }
 
+        public class TheSaveReadmeFileAsyncMethod
+        {
+            [Fact]
+            public async Task WhenPackageNull_ThrowsArgumentNullException()
+            {
+                var service = CreateService();
+
+                await Assert.ThrowsAsync<ArgumentNullException>(async () => await service.SaveReadmeFileAsync(null, Stream.Null));
+            }
+
+            [Fact]
+            public async Task WhenStreamIsNull_ThrowsArgumentException()
+            {
+                var service = CreateService();
+                var package = CreatePackage();
+
+                await Assert.ThrowsAsync<ArgumentNullException>(async () => await service.SaveReadmeFileAsync(package, null));
+            }
+
+            [Fact]
+            public async Task WhenEmbeddedReadmeTypeIsAbsent_ThrowsArgumentException()
+            {
+                var service = CreateService();
+                var package = CreatePackage();
+                package.EmbeddedReadmeType = EmbeddedReadmeFileType.Absent;
+                var packageStream = GeneratePackageAsync("readme.md");
+
+                var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.SaveReadmeFileAsync(package, packageStream));
+                Assert.Equal("package", ex.ParamName);
+                Assert.Contains("embedded readme", ex.Message);
+            }
+
+            [Fact]
+            public async Task WhenValid_SavesReadmeFile()
+            {
+                // Arrange.
+                var fileServiceMock = new Mock<IFileStorageService>();
+                fileServiceMock.Setup(f => f.SaveFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<bool>()))
+                    .Returns(Task.CompletedTask)
+                    .Verifiable();
+                var service = CreateService(fileServiceMock);
+
+                var package = new Package()
+                {
+                    PackageRegistration = new PackageRegistration() { Id = "Foo" },
+                    Version = "1.0.0",
+                    EmbeddedReadmeType = EmbeddedReadmeFileType.Markdown
+                };
+                var packageStream = GeneratePackageAsync("readme.md");
+
+                // Act.
+                await service.SaveReadmeFileAsync(package, packageStream);
+
+                // Assert.
+                fileServiceMock.Verify(f => f.SaveFileAsync(CoreConstants.Folders.PackageReadMesFolderName, "active/foo/1.0.0.md", It.IsAny<Stream>(), true),
+                    Times.Once);
+            }
+        }
+
         public class TheDownloadReadMeMdFileAsyncMethod
         {
             [Fact]
@@ -356,6 +416,15 @@ namespace NuGetGallery
         static MemoryStream CreatePackageFileStream()
         {
             return new MemoryStream(new byte[] { 0, 0, 1, 0, 1, 0, 1, 0 }, 0, 8, true, true);
+        }
+
+        private static byte[] ReadmeFileContents => Encoding.UTF8.GetBytes("Sample readme md file");
+
+        private static MemoryStream GeneratePackageAsync(string readmeFileName = null, bool saveReadmeFile = true)
+        {
+            return PackageServiceUtility.CreateNuGetPackageStream(
+                readmeFilename: readmeFileName,
+                readmeFileContents: readmeFileName != null && saveReadmeFile ? ReadmeFileContents : null);
         }
 
         static PackageFileService CreateService(Mock<IFileStorageService> fileStorageSvc = null)

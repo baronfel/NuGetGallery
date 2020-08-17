@@ -74,6 +74,33 @@ namespace NuGetGallery
         }
 
         /// <summary>
+        /// Saves the package readme.md file to storage.
+        /// </summary>
+        /// <param name="package">The package associated with the readme.</param>
+        /// <param name="ReadmeFile">The content of readme file.</param>
+        public Task SaveReadmeFileAsync(Package package, Stream ReadmeFile)
+        {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            if (ReadmeFile == null)
+            {
+                throw new ArgumentNullException(nameof(ReadmeFile));
+            }
+
+            if (package.EmbeddedReadmeType == EmbeddedReadmeFileType.Absent)
+            {
+                throw new ArgumentException("Package must have an embedded readme", nameof(package));
+            }
+
+            var fileName = FileNameHelper.BuildFileName(package, ReadMeFilePathTemplateActive, ServicesConstants.MarkdownFileExtension);
+
+            return _fileStorageService.SaveFileAsync(CoreConstants.Folders.PackageReadMesFolderName, fileName, ReadmeFile, overwrite: true);
+        }
+
+        /// <summary>
         /// Downloads the readme.md from storage.
         /// </summary>
         /// <param name="package">The package associated with the readme.</param>
